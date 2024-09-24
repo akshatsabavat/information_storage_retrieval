@@ -29,6 +29,7 @@ public class StopWordRemover {
 				stopwords.add(linePointer.trim().toLowerCase());
 				linePointer = reader.readLine();
 			}
+			reader.close();
 		} catch (IOException e) {
 			System.err.println("Error reading Stop Word file: " + e.getMessage());	
 		}

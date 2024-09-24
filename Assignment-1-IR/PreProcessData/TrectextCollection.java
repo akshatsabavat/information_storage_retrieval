@@ -49,6 +49,7 @@ public class TrectextCollection implements DocumentCollection {
 				if (documentNumber != null) {
 					Map<String, Object> document = new HashMap<>(); 
 					document.put(documentNumber, documentContentBuilder.toString().toCharArray());
+					linePointer = reader.readLine(); //Move to the next document in the collection
 					return document;
 				}
 			} else {
