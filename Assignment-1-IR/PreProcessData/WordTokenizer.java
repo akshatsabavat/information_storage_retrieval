@@ -8,18 +8,35 @@ package PreProcessData;
  * Please add comments along with your code.
  */
 public class WordTokenizer {
-	//you can add essential private methods or variables
+	private char[] texts;
+	private int currentPosition;
 
 	// YOU MUST IMPLEMENT THIS METHOD
 	public WordTokenizer( char[] texts ) {
-		// this constructor will tokenize the input texts (usually it is a char array for a whole document)
+		this.texts = texts;
+        this.currentPosition = 0;
 	}
 
 	// YOU MUST IMPLEMENT THIS METHOD
 	public char[] nextWord() {
-		// read and return the next word of the document
-		// or return null if it is the end of the document
-		return null;
+		StringBuilder wordToken = new StringBuilder();
+		while(currentPosition < texts.length) {
+			char charecterPointer = texts[currentPosition];
+			if(Character.isLetterOrDigit(charecterPointer)) {
+				wordToken.append(texts[charecterPointer]);
+				currentPosition++;
+			} else if (wordToken.length() > 0) {
+				return wordToken.toString().toCharArray();
+			} else {
+				currentPosition++;
+			}
+		}
+		
+		if (wordToken.length() > 0){
+			return wordToken.toString().toCharArray();
+		} else {
+			return null;
+		}
 	}
 
 }
