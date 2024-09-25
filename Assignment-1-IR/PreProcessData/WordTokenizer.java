@@ -23,7 +23,7 @@ public class WordTokenizer {
 		while(currentPosition < texts.length) {
 			char charecterPointer = texts[currentPosition];
 			if(Character.isLetterOrDigit(charecterPointer)) {
-				wordToken.append(texts[charecterPointer]);
+				wordToken.append(charecterPointer);
 				currentPosition++;
 			} else if (wordToken.length() > 0) {
 				return wordToken.toString().toCharArray();
