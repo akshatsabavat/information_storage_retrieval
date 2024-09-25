@@ -15,6 +15,7 @@ import java.io.IOException;
 public class TrecwebCollection implements DocumentCollection {
 	private BufferedReader reader;
 	private String linePointer;
+	private Boolean inContentZoneFlag;
 
 	// YOU SHOULD IMPLEMENT THIS METHOD
 	public TrecwebCollection() throws IOException {
@@ -23,9 +24,11 @@ public class TrecwebCollection implements DocumentCollection {
 	}
 
 	// This function was created to remove the html tags when storing the web document contents
-	private String cleanDocumentHTML(String html) {
-		return html.replaceAll("<[^>]*>", "");
-	}
+	private String removeHTMLTags(String content) {
+        return content.replaceAll("<[^>]+>", "").trim();
+    }
+
+	// private Strin removeHTMLTags()
 
 	// YOU SHOULD IMPLEMENT THIS METHOD
 	public Map<String, Object> nextDocument() throws IOException {
@@ -38,6 +41,8 @@ public class TrecwebCollection implements DocumentCollection {
 
 			StringBuilder documentContentBuilder = new StringBuilder();
 			String documentNumber = null;
+			inContentZoneFlag = false;
+
 
 			while (linePointer != null) {
 				if(linePointer.startsWith("<DOC>")) {
@@ -48,16 +53,15 @@ public class TrecwebCollection implements DocumentCollection {
 					// the line below skips over the 7 charecters of the <DOCNO /> and then it begins extraction of the document number till it reaches the ending tag
 					documentNumber = linePointer.substring(7, linePointer.indexOf("</DOCNO>")).trim(); // document number stored
 				} else if (linePointer.startsWith("</DOCHDR>")) {
-					linePointer = reader.readLine();  // Move to content line
-                    while (linePointer != null && !linePointer.startsWith("</DOC>")) {
-                        documentContentBuilder.append(cleanDocumentHTML(linePointer)).append(" ");
-                        linePointer = reader.readLine();  // Read next line within the document
-                    }
-				} else if (linePointer.startsWith("</DOC>")){
-					if(documentNumber != null) {
-						Map<String, Object> document = new HashMap<>(); 
-						document.put(documentNumber, documentContentBuilder.toString().toCharArray());
-						linePointer = reader.readLine(); //Move to the next document in the collection
+					inContentZoneFlag = true;
+				} else if (inContentZoneFlag && !linePointer.startsWith("</DOC>")) {
+					documentContentBuilder.append(linePointer).append("\n");
+				} else if (linePointer.startsWith("</DOC>")) {
+					if (documentNumber != null) {
+						Map<String, Object> document = new HashMap<>();
+						String cleanContent = removeHTMLTags(documentContentBuilder.toString());
+						document.put(documentNumber, cleanContent.toCharArray());
+						linePointer = reader.readLine(); // Move to the next document
 						return document;
 					}
 				}
