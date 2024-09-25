@@ -64,6 +64,14 @@ public class TrecwebCollection implements DocumentCollection {
 
 				linePointer = reader.readLine();
 			}
+
+			// if (documentNumber != null) {
+            //     Map<String, Object> document = new HashMap<>(); 
+            //     document.put(documentNumber, documentContentBuilder.toString().toCharArray());
+            //     System.out.println("Processing final document: " + documentNumber);
+            //     return document;
+            // }
+			
 		} catch (IOException e) {
 			System.err.println("Error reading Trecweb file: " + e.getMessage());
 			return null;
