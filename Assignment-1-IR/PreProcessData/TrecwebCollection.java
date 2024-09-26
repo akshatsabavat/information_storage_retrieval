@@ -7,17 +7,12 @@ import java.util.Map;
 import Classes.Path;
 import java.io.IOException;
 
-/**
- * This is for INFSCI-2224 in 2024
- *
- * Please add comments along with your code.
- */
 public class TrecwebCollection implements DocumentCollection {
 	private BufferedReader reader;
 	private String linePointer;
+	// The content flag below was created as a way to save state and detect if the linePointer is in between the </DOCHDR> and </DOC> tag where the content of the document lies
 	private Boolean inContentZoneFlag;
 
-	// YOU SHOULD IMPLEMENT THIS METHOD
 	public TrecwebCollection() throws IOException {
 		reader = new BufferedReader(new FileReader(Path.DataWebDir));
 		linePointer = reader.readLine();
@@ -25,22 +20,21 @@ public class TrecwebCollection implements DocumentCollection {
 
 	// This function was created to remove the html tags when storing the web document contents
 	private String removeHTMLTags(String content) {
+	// AI-assisted: The exact regex expression was suggested by the AI tool: Perplexity, as I had multiple errors with mine
         return content.replaceAll("<[^>]+>", "").trim();
     }
 
-	// private Strin removeHTMLTags()
-
-	// YOU SHOULD IMPLEMENT THIS METHOD
 	public Map<String, Object> nextDocument() throws IOException {
 		try {
-			// Reaching end of document collection check
-			if(linePointer == null){
+			// A simple check to see if linePointer had reached the end of the document
+			if (linePointer == null){
 				reader.close();
 				return null;
 			}
 
-			StringBuilder documentContentBuilder = new StringBuilder();
-			String documentNumber = null;
+			// AI-assisted: The idea of using a string builder, initialy used string and took a long time store document content
+			StringBuilder documentContentBuilder = new StringBuilder(); // accumalates and builds document content, preffered over concatinating document content over String
+			String documentNumber = null; // string variable to store the document number
 			inContentZoneFlag = false;
 
 
@@ -58,7 +52,9 @@ public class TrecwebCollection implements DocumentCollection {
 					documentContentBuilder.append(linePointer).append("\n");
 				} else if (linePointer.startsWith("</DOC>")) {
 					if (documentNumber != null) {
+										// Creates a new <Document Number, Documnet Content> structure and returns, if I have a document number
 						Map<String, Object> document = new HashMap<>();
+						// cleaning html tags from the document
 						String cleanContent = removeHTMLTags(documentContentBuilder.toString());
 						document.put(documentNumber, cleanContent.toCharArray());
 						linePointer = reader.readLine(); // Move to the next document
@@ -68,14 +64,8 @@ public class TrecwebCollection implements DocumentCollection {
 
 				linePointer = reader.readLine();
 			}
-
-			// if (documentNumber != null) {
-            //     Map<String, Object> document = new HashMap<>(); 
-            //     document.put(documentNumber, documentContentBuilder.toString().toCharArray());
-            //     System.out.println("Processing final document: " + documentNumber);
-            //     return document;
-            // }
 			
+		// Added Try and catch to read errors better
 		} catch (IOException e) {
 			System.err.println("Error reading Trecweb file: " + e.getMessage());
 			return null;

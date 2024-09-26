@@ -1,27 +1,21 @@
 package PreProcessData;
 
-/**
- * This is for INFSCI-2140 in 2024
- *
- * TextTokenizer can split a sequence of text into individual word tokens.
- *
- * Please add comments along with your code.
- */
 public class WordTokenizer {
 	private char[] texts;
+	// declared a position variable to go charecter by charecter
 	private int currentPosition;
 
-	// YOU MUST IMPLEMENT THIS METHOD
 	public WordTokenizer( char[] texts ) {
 		this.texts = texts;
         this.currentPosition = 0;
 	}
 
-	// YOU MUST IMPLEMENT THIS METHOD
 	public char[] nextWord() {
-		StringBuilder wordToken = new StringBuilder();
+		StringBuilder wordToken = new StringBuilder(); // Using string builder over string for same reasons done when reading document files
 		while(currentPosition < texts.length) {
+			// initializing the charecter pointer
 			char charecterPointer = texts[currentPosition];
+			// a check to see if each input from the array we iterate is a valid charecter or a digit
 			if(Character.isLetterOrDigit(charecterPointer)) {
 				wordToken.append(charecterPointer);
 				currentPosition++;
@@ -31,7 +25,8 @@ public class WordTokenizer {
 				currentPosition++;
 			}
 		}
-		
+
+		// AI-assisted: Handling the last word of the text, previously missed this step and it haulted the entire code returning garbage values
 		if (wordToken.length() > 0){
 			return wordToken.toString().toCharArray();
 		} else {

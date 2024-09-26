@@ -8,31 +8,25 @@ import Classes.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * This is for INFSCI-2140 in 2024
- *
- * Please add comments along with your code.
- */
 public class TrectextCollection implements DocumentCollection {
 	private BufferedReader reader; // for reading documents line by line
 	private String linePointer; // points towards reading the line of any incomiung document
 
-	// YOU SHOULD IMPLEMENT THIS METHOD
 	public TrectextCollection() throws IOException {
 	reader = new BufferedReader(new FileReader(Path.DataTextDir));
 	linePointer = reader.readLine(); // starts the reading of the file
 	}
 
-	// YOU SHOULD IMPLEMENT THIS METHOD
 	public Map<String, Object> nextDocument() throws IOException {
 		try {
-			// Reaching end of document check
+			// A simple check to see if linePointer had reached the end of the document
 			if(linePointer == null) {
 			reader.close();
 			return null;
 			}
 
-			StringBuilder documentContentBuilder = new StringBuilder(); // accumalates and builds document content
+			// AI-assisted: The idea of using a string builder, initialy used string and took a long time store document content
+			StringBuilder documentContentBuilder = new StringBuilder(); // accumalates and builds document content, preffered over concatinating document content over String
 			String documentNumber = null; // string variable to store the document number associated with the documnet content
 
 		while(linePointer != null) {

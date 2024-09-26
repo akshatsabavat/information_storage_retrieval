@@ -6,10 +6,11 @@ import Classes.Stemmer;
  *
  * Please add comments along with your code.
  */
-public class WordNormalizer {;
-	// YOU MUST IMPLEMENT THIS METHOD
+public class WordNormalizer {
+	private final Stemmer stemmer= new Stemmer(); // declared a stemmer instance for use
+
 	public char[] lowercase( char[] chars ) {
-		// A simple for loop to update all the individual charecters in the array to lowercase
+		// A simple for loop to update all the individual charecters of a word to lowercase
 		for(int i = 0; i < chars.length; i++){
 			chars[i] = Character.toLowerCase(chars[i]);
 		}
@@ -17,8 +18,8 @@ public class WordNormalizer {;
 	}
 
 	public String stem(char[] chars)
+	// Applies stemming to all input words given to function 
 	{
-		Stemmer stemmer = new Stemmer();
 		stemmer.add(chars, chars.length);
 		stemmer.stem();
 		return stemmer.toString();
