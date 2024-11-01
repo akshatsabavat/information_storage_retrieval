@@ -82,7 +82,6 @@ public class ExtractQuery {
 				// below statements handle encounter of desc tag and build query accordingly
 			} else if (linePointer.startsWith("<title>")) {
 				titleFlag = true;
-				extractQueryContentFromTag(linePointer, queryContent, titleFlag);
 			} else if (linePointer.startsWith("<desc>")) {
 				// prevent further appending to query content as we have encountered desc tag
 				titleFlag = false;
@@ -98,6 +97,11 @@ public class ExtractQuery {
 					// appending to queries list data structure
 					queries.add(query);
 				}
+
+				topicId = null;
+				queryContent = new StringBuilder();
+			} else if (titleFlag) {
+				extractQueryContentFromTag(linePointer, queryContent, titleFlag);
 			}
 
 		}
@@ -106,14 +110,26 @@ public class ExtractQuery {
 	}
 
 	public ExtractQuery() {
+		// initializing a new list of queries to populate in memory
+		queries = new ArrayList<>();
 		currentPostion = 0;
+		try {
+			topicQueryExtraction(Path.TopicDir);
+		} catch (IOException e) {
+			System.err.println("Error while extracting query from topics.txt" + e.getMessage());
+		}
 	}
 
 	public boolean hasNext() {
-		return false;
+		// validates and ensures there are still queries remaining in the Query List
+		return currentPostion < queries.size();
 	}
 
 	public Query next() {
+		if (hasNext()) {
+			// move to the next position knowing u have queries left in the Array Query List
+			return queries.get(currentPostion++);
+		}
 		return null;
 	}
 }
