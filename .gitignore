@@ -1,2 +1,5 @@
-/Assignment-1-IR/data
 /*.class
+
+# Ignore all data folders
+**/data/
+**/lib/
