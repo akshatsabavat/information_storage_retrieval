@@ -27,6 +27,34 @@ public class QueryRetrievalModel {
 	 * @return
 	 */
 
+	// class method to sort and return topN documents results
+	private List<Document> returnTopNDocuments(int TopN, Map<Integer, Double> documentScores) throws IOException {
+		// AI mark
+		// creates a min-heap based on document scores, but inverted (b.score() -
+		// a.score()) so that the lowest scoring document is at the top of the queue.
+		PriorityQueue<Document> topDocs = new PriorityQueue<>(TopN,
+				(a, b) -> Double.compare(b.score(), a.score()));
+
+		for (Map.Entry<Integer, Double> documentScore : documentScores.entrySet()) {
+			// Create a new instance of Document to add to the topN docs priority queue
+			int docId = documentScore.getKey();
+			String docNo = indexReader.getDocno(docId);
+			double score = documentScore.getValue();
+			Document doc = new Document(Integer.toString(docId), docNo, score);
+			// add the newly created document {docNo}
+			topDocs.offer(doc);
+			// if the queue size ever exceeds then it simply removes the doc with the least
+			// score, and topN remain
+			if (topDocs.size() > TopN) {
+				// poll removes the head of the queue as it follows min heap structure
+				topDocs.poll();
+			}
+		}
+
+		List<Document> results = new ArrayList<>(topDocs);
+		return results;
+	}
+
 	public List<Document> retrieveQuery(Query aQuery, int TopN) throws IOException {
 		String[] termsInQuery = aQuery.GetQueryContent().split("\\s+");
 		// A hash map for document scores relative to the document IDs so we can sort
@@ -70,7 +98,13 @@ public class QueryRetrievalModel {
 				}
 			}
 		}
-		return null;
+
+		List<Document> results = returnTopNDocuments(TopN, documentScores);
+		// AI mark, was not returning results in the right format before this
+		// PriorityQueue doesn't maintain the elements in sorted order, it only
+		// guarantees that the lowest scoring document is at the top.
+		Collections.sort(results, (a, b) -> Double.compare(b.score(), a.score()));
+		return results;
 	}
 
 }
