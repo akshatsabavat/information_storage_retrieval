@@ -19,25 +19,31 @@ public class ExtractQuery {
 
 	// private function handles creation of query content until desc tag is
 	// encountered
-	private void extractQueryContentFromTag(String linePointer, StringBuilder queryContent, boolean titleFlag) {
-		if (titleFlag) {
-			// extracts content immediatly after title tag, till we encounter <desc> tag
-			queryContent.append(linePointer.substring("<title>".length()).trim()).append(" ");
-		}
-	}
+	// private void extractQueryContentFromTag(String linePointer, StringBuilder
+	// queryContent, boolean titleFlag) {
+	// if (titleFlag) {
+	// // extracts content immediatly after title tag, till we encounter <desc> tag
+	// if (linePointer.startsWith("<title>")) {
+	// queryContent.append(linePointer.substring("<title>".length()).trim()).append("
+	// ");
+	// } else {
+	// queryContent.append(linePointer.trim()).append(" ");
+	// }
+	// }
+	// }
 
 	// creating a hash set for stop word removal so look up and removal is O(1)
 	private Set<String> LoadStopWords() {
 		Set<String> stopWords = new HashSet<>();
 		try {
-			// reader initalized to read stopword.txt
-			BufferedReader reader = new BufferedReader(new FileReader(Path.StopwordDir));
-			String linePointer; // Keeps track of file contents
+			// surrounded reader with try resources to ensure automatic close of reader
+			try (// reader initalized to read stopword.txt
+					BufferedReader reader = new BufferedReader(new FileReader(Path.StopwordDir))) {
+				String linePointer; // Keeps track of file contents
 
-			linePointer = reader.readLine();
-
-			while (linePointer != null) {
-				stopWords.add(linePointer.trim().toLowerCase());
+				while ((linePointer = reader.readLine()) != null) {
+					stopWords.add(linePointer.trim().toLowerCase());
+				}
 			}
 		} catch (IOException e) {
 			System.err.println("Error while creating stop word hashset" + e.getMessage());
@@ -46,6 +52,7 @@ public class ExtractQuery {
 	}
 
 	private String preProcessQueryContent(String queryContent) {
+		System.out.println("Pre-processing query: " + queryContent);
 		// Tokenization
 		String[] tokens = queryContent.split("\\s+");
 		// Rather than applying a loop, used streams api to create a map function that
@@ -71,20 +78,23 @@ public class ExtractQuery {
 		String topicId = null; // When <num Tag> split Number: and store value// of ID into this variable
 		StringBuilder queryContent = new StringBuilder(); // used to store topic title as query content
 
-		linePointer = reader.readLine(); // start reading document
-		// iterate till end of document
-		while (linePointer != null) {
+		// start reading document
+		while ((linePointer = reader.readLine()) != null) {
 			if (linePointer.startsWith("<num>")) {
 				// split all that comes after Number following num tag --> Number: x - {XYX}
 				// where x is topic ID, \s* for 0 or more spaces
 				topicId = linePointer.split("Number:\\s*")[1].trim();
+				System.out.println("Found topic ID: " + topicId);
 				// below statements handle encounter of desc tag and build query accordingly
 			} else if (linePointer.startsWith("<title>")) {
 				titleFlag = true;
+				System.out.println("Title flag set to true");
+				queryContent.append(linePointer.substring("<title>".length()).trim()).append(" ");
 			} else if (linePointer.startsWith("<desc>")) {
 				// prevent further appending to query content as we have encountered desc tag
 				titleFlag = false;
 			} else if (linePointer.startsWith("</top>")) {
+				System.out.println("End of topic reached");
 				// when we encounter ending tag for each topic we ensure to add the collected
 				// query data to the QueryList and keep continuing
 				if (topicId != null && queryContent.length() > 0) {
@@ -100,7 +110,7 @@ public class ExtractQuery {
 				topicId = null;
 				queryContent = new StringBuilder();
 			} else if (titleFlag) {
-				extractQueryContentFromTag(linePointer, queryContent, titleFlag);
+				queryContent.append(linePointer.substring("<title>".length()).trim()).append(" ");
 			}
 
 		}
@@ -112,8 +122,17 @@ public class ExtractQuery {
 		// initializing a new list of queries to populate in memory
 		queries = new ArrayList<>();
 		currentPostion = 0;
+
 		try {
 			topicQueryExtraction(Path.TopicDir);
+			System.out.println("\n=== All Extracted Queries ===");
+			for (Query query : queries) {
+				System.out.println("Topic ID: " + query.GetTopicId());
+				System.out.println("Content: " + query.GetQueryContent());
+				System.out.println("------------------------");
+			}
+			System.out.println("=== End of Queries ===\n");
+
 		} catch (IOException e) {
 			System.err.println("Error while extracting query from topics.txt" + e.getMessage());
 		}

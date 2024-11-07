@@ -1,0 +1,9 @@
+{
+  "java.project.sourcePaths": ["lib", "src"],
+  "java.project.referencedLibraries": [
+    "c:\\Software\\Pitt\\information_storage_retrieval\\Assignment-3-IR\\lib\\lucene-core-6.3.0.jar",
+    "c:\\Software\\Pitt\\information_storage_retrieval\\Assignment-3-IR\\lib\\lucene-backward-codecs-6.3.0.jar",
+    "c:\\Software\\Pitt\\information_storage_retrieval\\Assignment-3-IR\\lib\\lucene-queryparser-6.3.0.jar",
+    "c:\\Software\\Pitt\\information_storage_retrieval\\Assignment-3-IR\\lib\\lucene-analyzers-common-6.3.0.jar"
+  ]
+}

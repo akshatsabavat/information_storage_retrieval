@@ -14,11 +14,12 @@ public class HW3Main {
 	public static void main(String[] args) throws Exception {
 		// Open index
 		MyIndexReader ixreader = new MyIndexReader("trectext");
+
 		// Initialize the MyRetrievalModel
 		QueryRetrievalModel model = new QueryRetrievalModel(ixreader);
 		// Extract the queries
 		ExtractQuery queries = new ExtractQuery();
-		
+
 		long startTime = System.currentTimeMillis();
 		while (queries.hasNext()) {
 			Query aQuery = queries.next();
@@ -28,7 +29,8 @@ public class HW3Main {
 			if (results != null) {
 				int rank = 1;
 				for (Document result : results) {
-					System.out.println(aQuery.GetTopicId() + " Q0 " + result.docno() + " " + rank + " " + result.score() + " MYRUN");
+					System.out.println(aQuery.GetTopicId() + " Q0 " + result.docno() + " " + rank + " " + result.score()
+							+ " MYRUN");
 					rank++;
 				}
 			}

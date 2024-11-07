@@ -2,7 +2,6 @@ package IndexingLucene;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -29,9 +28,9 @@ public class MyIndexReader {
 
 	public MyIndexReader(String dataType) throws IOException {
 		if (dataType.equals("trectext")) {
-			directory = FSDirectory.open(Paths.get(Classes.Path.IndexTextDir));
+			directory = FSDirectory.open(new File(Classes.Path.IndexTextDir).toPath());
 		} else {
-			directory = FSDirectory.open(Paths.get(Classes.Path.IndexWebDir));
+			directory = FSDirectory.open(new File(Classes.Path.IndexWebDir).toPath());
 		}
 		ireader = DirectoryReader.open(directory);
 		isearcher = new IndexSearcher(ireader);

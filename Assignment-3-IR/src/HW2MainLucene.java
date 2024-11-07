@@ -14,67 +14,66 @@ public class HW2MainLucene {
 		// main entrance
 		HW2MainLucene hm2 = new HW2MainLucene();
 
-		
-		long startTime=System.currentTimeMillis();
+		long startTime = System.currentTimeMillis();
 		hm2.WriteIndex("trecweb");
-		long endTime=System.currentTimeMillis();
-		System.out.println("index web corpus running time: "+(endTime-startTime)/60000.0+" min"); 
-		startTime=System.currentTimeMillis();
+		long endTime = System.currentTimeMillis();
+		System.out.println("index web corpus running time: " + (endTime - startTime) / 60000.0 + " min");
+		startTime = System.currentTimeMillis();
 		hm2.ReadIndex("trecweb", "acow");
-		endTime=System.currentTimeMillis();
-		System.out.println("load index & retrieve running time: "+(endTime-startTime)/60000.0+" min");
+		endTime = System.currentTimeMillis();
+		System.out.println("load index & retrieve running time: " + (endTime - startTime) / 60000.0 + " min");
 
-		startTime=System.currentTimeMillis();
+		startTime = System.currentTimeMillis();
 		hm2.WriteIndex("trectext");
-		endTime=System.currentTimeMillis();
-		System.out.println("index text corpus running time: "+(endTime-startTime)/60000.0+" min");
-		startTime=System.currentTimeMillis();
+		endTime = System.currentTimeMillis();
+		System.out.println("index text corpus running time: " + (endTime - startTime) / 60000.0 + " min");
+		startTime = System.currentTimeMillis();
 		hm2.ReadIndex("trectext", "yhoo");
-		endTime=System.currentTimeMillis();
-		System.out.println("load index & retrieve running time: "+(endTime-startTime)/60000.0+" min");
-		
-		
-		
+		endTime = System.currentTimeMillis();
+		System.out.println("load index & retrieve running time: " + (endTime - startTime) / 60000.0 + " min");
+
 	}
 
 	public void WriteIndex(String dataType) throws Exception {
 		// Initiate pre-processed collection file reader
-		PreProcessedCorpusReader corpus=new PreProcessedCorpusReader(dataType);
-		
+		PreProcessedCorpusReader corpus = new PreProcessedCorpusReader(dataType);
+
 		// initiate the output object
-		MyIndexWriter output=new MyIndexWriter(dataType);
-		
-		// initiate a doc object, which can hold document number and document content of a document
+		MyIndexWriter output = new MyIndexWriter(dataType);
+
+		// initiate a doc object, which can hold document number and document content of
+		// a document
 		Map<String, Object> doc = null;
 
-		int count=0;
+		int count = 0;
 		// build index of corpus document by document
 		while ((doc = corpus.nextDocument()) != null) {
 			// load document number and content of the document
 			String docno = doc.keySet().iterator().next();
 			char[] content = (char[]) doc.get(docno);
 			// index this document
-			output.index(docno, content); 
-			
+			output.index(docno, content);
+
 			count++;
-			if(count%10000==0)
-				System.out.println("finish "+count+" docs");
+			if (count % 10000 == 0)
+				System.out.println("finish " + count + " docs");
 		}
-		System.out.println("totaly document count:  "+count);
+		System.out.println("totaly document count:  " + count);
 		output.close();
 	}
-	
+
 	public void ReadIndex(String dataType, String token) throws Exception {
 		// Initiate the index file reader
-		MyIndexReader ixreader=new MyIndexReader(dataType);
-		
+		MyIndexReader ixreader = new MyIndexReader(dataType);
+
 		// do retrieval
 		int df = ixreader.DocFreq(token);
 		long ctf = ixreader.CollectionFreq(token);
-		System.out.println(" >> the token \""+token+"\" appeared in "+df+" documents and "+ctf+" times in total");
-		if(df>0){
+		System.out.println(
+				" >> the token \"" + token + "\" appeared in " + df + " documents and " + ctf + " times in total");
+		if (df > 0) {
 			int[][] posting = ixreader.getPostingList(token);
-			for(int ix=0;ix<posting.length;ix++){
+			for (int ix = 0; ix < posting.length; ix++) {
 				int docid = posting[ix][0];
 				int freq = posting[ix][1];
 				String docno = ixreader.getDocno(docid);

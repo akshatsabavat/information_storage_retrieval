@@ -65,8 +65,15 @@ public class QueryRetrievalModel {
 		// iterate through the terms in the query to calculate the document score,
 		// delivered by -> tf, cf, |D|, P(w|C) = cf/cl
 		for (String term : termsInQuery) {
-			// first retrieve the relevant documents that actuall contain these terms
+			// first retrieve the relevant documents that actually contain these terms
 			long termCollectionFrequency = indexReader.CollectionFreq(term); // cf
+
+			// If the term doesn't appear in the collection, skip it
+			if (termCollectionFrequency == 0) {
+				System.out.println("Term '" + term + "' not found in the collection. Skipping.");
+				continue;
+			}
+
 			int[][] postingsList = indexReader.getPostingList(term);
 			if (postingsList != null) {
 				// store the document IDs with the associated term frequencies and document
@@ -102,7 +109,7 @@ public class QueryRetrievalModel {
 		List<Document> results = returnTopNDocuments(TopN, documentScores);
 		// AI mark, was not returning results in the right format before this
 		// PriorityQueue doesn't maintain the elements in sorted order, it only
-		// guarantees that the lowest scoring document is at the top.
+		// guarantees that the best scoring document is at the top.
 		Collections.sort(results, (a, b) -> Double.compare(b.score(), a.score()));
 		return results;
 	}
