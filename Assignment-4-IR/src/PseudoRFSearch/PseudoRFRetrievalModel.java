@@ -60,14 +60,28 @@ public class PseudoRFRetrievalModel {
 	}
 
 	/**
-	 * The below function calculates the RF score with regardes to the documents from the old model as feedback
+	 * The below function calculates the RF score for a document
 	 *
-	 * @param aQuery The original query
-	 * @param doc Target document
-	 * @param TokenRFScore Token probabilities from feedback documents
+	 * @param Q The original query user is sending
+	 * @param D Document from the old doc list
+	 * @param RFScore Probabilities from feedback documents
 	 * @param alpha Interpolation parameter
-	 * @return Query likelihood score
+	 * @return Returns the query score as double
 	 */
 
+	private double RfFeedbackScore(Query Q, Document D, HasMap<String, Double> RFScore, double alpha) throws Exception {
+
+	}
+
+	/**
+	 * Calculate doc term prob with Dirichlet Smoothing
+	 *
+	 * @param doc Document
+	 * @param token Query token
+	 * @return Probability of term
+	 */
+
+	private double calculateDocTermProb(Document doc, String token) throws Exception {
+	}
 
 }
