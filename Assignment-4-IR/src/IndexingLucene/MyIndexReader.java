@@ -206,6 +206,11 @@ public class MyIndexReader {
 		Term t = new Term("CONTENT", term);
 		return ireader.docFreq(t);
 	}
+
+	// Method to return documents in collection the size
+	public Integer getDocumentCollectionSize() throws IOException {
+		return ireader.numDocs();
+	}
 	
 	public void close() throws IOException {
 		// you should implement this method when necessary

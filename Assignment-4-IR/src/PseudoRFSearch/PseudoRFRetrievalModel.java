@@ -1,8 +1,6 @@
 package PseudoRFSearch;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import Classes.Document;
 import Classes.Query;
@@ -36,19 +34,32 @@ public class PseudoRFRetrievalModel {
 		List<Document> feedBackDocuments = previousModel.retrieveQuery(aQuery, TopK); // fetching the documents from the old model to be used as feedback
 
 		// (2) implement GetTokenRFScore to get each query token's P(token|feedback model) in feedback documents
+		HashMap<String, Double> TokenRFScore = GetTokenRFScore(aQuery, feedBackDocuments);
 
-		// (3) implement the relevance feedback model for each token: combine the each query token's original retrieval score P(token|document) with its score in feedback documents P(token|feedback model)
-		// (4) for each document, use the query likelihood language model to get the whole query's new score, P(Q|document)=P(token_1|document')*P(token_2|document')*...*P(token_n|document')
-
-
-		//get P(token|feedback documents)
-		HashMap<String,Double> TokenRFScore = GetTokenRFScore(aQuery,feedBackDocuments);
+		// now getting the documents from the old model all together, using query not just topk
+		Integer collectionSize = ixreader.getDocumentCollectionSize();
+		List<Document> originalDocumentList = previousModel.retrieveQuery(aQuery, collectionSize);
 
 
-		// sort all retrieved documents from most relevant to least, and return TopN
-		List<Document> results = new ArrayList<Document>();
+		// (3) & (4) Calculating the document scores with the RF scores of the query tokens and ranking them
+		List<Document> pseudoRFScoredDocumentList = new ArrayList<Document>();
+		for(Document document : originalDocumentList) {
+			double QueryLikelihood = calculateRFScore(aQuery, document, TokenRFScore, alpha);
+			document.setScore(QueryLikelihood); // set the score we get for that document query combination
+			pseudoRFScoredDocumentList.add(document); // add it to the new list
+		}
 
-		return results;
+		// Sort documents by new scores in descending order
+		pseudoRFScoredDocumentList.sort(new Comparator<Document>() {
+            @Override
+            public int compare(Document d1, Document d2) {
+                return Double.compare(d2.score(), d1.score());
+            }
+        });
+
+		// Now getting topK documents
+
+        return pseudoRFScoredDocumentList.subList(0, Math.min(TopN, pseudoRFScoredDocumentList.size()));
 	}
 
 
@@ -134,12 +145,12 @@ public class PseudoRFRetrievalModel {
 		for(String queryToken : queryTokens) {
 			double docTermProb = calculateDocTermProb(doc, queryToken); // P(Q|MD)
 			double feedBackTermProb = TokenRFScore.get(queryToken); // P(Q|F)
+			// P(Q|M’D)= αP(Q|MD)+(1-α)P(Q|F)
 			double tokenRelevanceScore = alpha * docTermProb + (1-alpha) * feedBackTermProb;
 
 			// using naive bayes assumption
-			// P(Q|M’D)= αP(Q|MD)+(1-α)P(Q|F)
-			// for Qi belongs to Q {t1, t2, t3 .... tn}
-			// P(Q|M’D) = P(Q(t1)|M’D) * P(Q(t2)|M’D) * .... * P(Q(tn)|M’D)
+			// for Qt belongs to Q {t1, t2, t3 .... tn}
+			// P(Q|document)=P(token_1|document')*P(token_2|document')*...*P(token_n|document')
 			QL *= tokenRelevanceScore;
 		}
 		return QL;
