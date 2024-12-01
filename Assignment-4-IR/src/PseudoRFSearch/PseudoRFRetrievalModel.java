@@ -42,7 +42,7 @@ public class PseudoRFRetrievalModel {
 
 
 		//get P(token|feedback documents)
-//		HashMap<String,Double> TokenRFScore=GetTokenRFScore(aQuery,TopK);
+		HashMap<String,Double> TokenRFScore = GetTokenRFScore(aQuery,feedBackDocuments);
 
 
 		// sort all retrieved documents from most relevant to least, and return TopN
@@ -101,7 +101,7 @@ public class PseudoRFRetrievalModel {
 			long tokenFreqCollection = ixreader.getTermCollectionFrequency(queryToken);
 
 			// P(w|D) = [totalFreqFeedback + mu x (termFreqCollection/collectionLength)] / (totalTermCount + mu)
-			double tokenProbability = (tokenFreqFeedback + (mu * ((double) tokenFreqCollection /collectionLength))) / (totalTermCount + mu);
+			double tokenProbability = (tokenFreqFeedback + mu * ((double) tokenFreqCollection /collectionLength)) / (totalTermCount + mu);
 
 			// add to tokenRFScore
 			TokenRFScore.put(queryToken, tokenProbability);
@@ -111,14 +111,18 @@ public class PseudoRFRetrievalModel {
 	}
 
 	/**
-	 * Calculate doc term prob with Dirichlet Smoothing
+	 * Function to calculate doc term prob with Dirichlet Smoothing, using formula, for one document and not multiple
 	 *
 	 * @param doc Document
 	 * @param token Query token
 	 * @return Probability of term
 	 */
 
-//	private double calculateDocTermProb(Document doc, String token) throws Exception {
-//	}
+	private double calculateDocTermProb(Document doc, String token, long collectionLength) throws Exception {
+		Integer tokenDocumentFrequency =  ixreader.getTermDocumentFrequency(token); // number of token counts in the document content
+		long tokenCollectionFrequency = ixreader.getTermCollectionFrequency(token); // number of token counts in the collection content
+		int documentLength = ixreader.docLength(doc.docid()); // total number of terms in document
+        return (tokenDocumentFrequency + mu * ((double) tokenCollectionFrequency/collectionLength)) / (documentLength + mu);
+	}
 
 }

@@ -152,9 +152,9 @@ public class MyIndexReader {
 	 * @return
 	 * @throws IOException
 	 */
-	public int docLength( int docid ) throws IOException {
+	public int docLength( String docid ) throws IOException {
 		int doc_length = 0;
-		Terms vector = ireader.getTermVector( docid, "CONTENT" );
+		Terms vector = ireader.getTermVector( Integer.parseInt(docid), "CONTENT" );
 		TermsEnum termsEnum = vector.iterator();
 		BytesRef text;
 		while ((text = termsEnum.next()) != null) {
@@ -183,9 +183,28 @@ public class MyIndexReader {
 		return D.get("CONTENT");
 	}
 
+	// Added new method of getting the term collection frequency
+	/**
+	 * Get term collection frequency
+	 * @param term
+	 * @return long collection frequency
+	 * @throws IOException
+	 */
 	public long getTermCollectionFrequency(String term) throws  IOException {
 		Term t = new Term("CONTENT", term); // creating a term object to pass through function
 		return ireader.totalTermFreq(t);
+	}
+
+	// Added new method of getting document term frequency
+	/**
+	 * Get term document frequency
+	 * @param term
+	 * @return String doc content
+	 * @throws IOException
+	 */
+	public Integer getTermDocumentFrequency(String term) throws IOException {
+		Term t = new Term("CONTENT", term);
+		return ireader.docFreq(t);
 	}
 	
 	public void close() throws IOException {
