@@ -165,7 +165,7 @@ public class MyIndexReader {
 
 	// Added method for getting collection length
 	public long getCollectionLength() throws IOException {
-		// uses the lucene library to get the total collection lenght required for
+		// uses the lucene library to get the total collection length required for
 		// P(w|C)
 		return ireader.getSumTotalTermFreq("CONTENT");
 	}
@@ -178,9 +178,14 @@ public class MyIndexReader {
 	 * @return String doc content
 	 * @throws IOException
 	 */
-	public String getDocContent(Integer docid) throws IOException {
-		Document D = ireader.document(docid);
+	public String getDocContent(String docid) throws IOException {
+		Document D = ireader.document(Integer.parseInt(docid));
 		return D.get("CONTENT");
+	}
+
+	public long getTermCollectionFrequency(String term) throws  IOException {
+		Term t = new Term("CONTENT", term); // creating a term object to pass through function
+		return ireader.totalTermFreq(t);
 	}
 	
 	public void close() throws IOException {
