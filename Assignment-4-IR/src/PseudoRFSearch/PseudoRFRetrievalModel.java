@@ -51,15 +51,6 @@ public class PseudoRFRetrievalModel {
 		return results;
 	}
 
-//	public HashMap<String,Double> GetTokenRFScore(Query aQuery,  int TopK) throws Exception
-//	{
-//		// for each token in the query, you should calculate token's score in feedback documents: P(token|feedback documents)
-//		// use Dirichlet smoothing
-//		// save <token, score> in HashMap TokenRFScore, and return it
-//		HashMap<String,Double> TokenRFScore=new HashMap<String,Double>();
-//
-//		return TokenRFScore;
-//	}
 
 	/**
 	 * The below function calculates probabilities of tokens of a query in a feedback document (GetTokenRFScore)
@@ -118,11 +109,40 @@ public class PseudoRFRetrievalModel {
 	 * @return Probability of term
 	 */
 
-	private double calculateDocTermProb(Document doc, String token, long collectionLength) throws Exception {
+	private double calculateDocTermProb(Document doc, String token) throws Exception {
+		long collectionLength = ixreader.getCollectionLength();
 		Integer tokenDocumentFrequency =  ixreader.getTermDocumentFrequency(token); // number of token counts in the document content
 		long tokenCollectionFrequency = ixreader.getTermCollectionFrequency(token); // number of token counts in the collection content
 		int documentLength = ixreader.docLength(doc.docid()); // total number of terms in document
         return (tokenDocumentFrequency + mu * ((double) tokenCollectionFrequency/collectionLength)) / (documentLength + mu);
+	}
+
+	/**
+	 * The final formula to calculate that relevance feed back score P(Q|M’D)=αP(Q|MD)+(1-α)P(Q|F)
+	 *
+	 * @param Q The original query
+	 * @param doc Target document
+	 * @param TokenRFScore Token probabilities from feedback documents
+	 * @param alpha Interpolation parameter
+	 * @return Query likelihood score
+	 */
+
+	private double calculateRFScore(Query Q, Document doc, HashMap<String, Double> TokenRFScore, double alpha) throws Exception {
+		double QL = 1.0; // QL is query liklihood, initializing to one
+		String[] queryTokens = Q.GetQueryContent().split("\\s+");
+
+		for(String queryToken : queryTokens) {
+			double docTermProb = calculateDocTermProb(doc, queryToken); // P(Q|MD)
+			double feedBackTermProb = TokenRFScore.get(queryToken); // P(Q|F)
+			double tokenRelevanceScore = alpha * docTermProb + (1-alpha) * feedBackTermProb;
+
+			// using naive bayes assumption
+			// P(Q|M’D)= αP(Q|MD)+(1-α)P(Q|F)
+			// for Qi belongs to Q {t1, t2, t3 .... tn}
+			// P(Q|M’D) = P(Q(t1)|M’D) * P(Q(t2)|M’D) * .... * P(Q(tn)|M’D)
+			QL *= tokenRelevanceScore;
+		}
+		return QL;
 	}
 
 }
