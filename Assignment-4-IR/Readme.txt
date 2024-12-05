@@ -1,3 +1,20 @@
+Run HW2MainLucene first to construct the indexes then run HW4main
+
+after making the configurations below on intelliJ IDE
+
+Look at the area just above the code editor where you see "Run" and "HW2MainLucene/HW4Main"
+Click on the "HW2MainLucene" / "HW4main" dropdown, which is next to the top right play button
+Select "Edit Configurations" from the menu that appears
+
+After doing this, a new window will open where you can add the JVM arguments.
+
+Copy and paste the following below in the JVM arguments feild
+
+--add-opens java.base/jdk.internal.ref=ALL-UNNAMED
+--add-opens java.base/java.lang=ALL-UNNAMED
+--add-opens java.base/java.nio=ALL-UNNAMED
+--add-opens java.base/sun.nio.ch=ALL-UNNAMED
+
 I have added the previous HW2MainLucene.java file if needed can be run again to create the indexes like last time
 Below is my run time results, it take 4 to 5 mins for the whole script to execute
 
@@ -26,20 +43,3 @@ Below is my run time results, it take 4 to 5 mins for the whole script to execut
 4 queries search time: 4.346466666666666 min
 
 Process finished with exit code 0
-
-Some more instructions
-
-I ran this on intelliJ
-
-Look at the area just above the code editor where you see "Run" and "HW2MainLucene/HW4Main"
-Click on the "HW2MainLucene" / "HW4main" dropdown, which is next to the top right play button
-Select "Edit Configurations" from the menu that appears
-
-After doing this, a new window will open where you can add the JVM arguments.
-
-Copy and paste the following below in the JVM arguments feild
-
---add-opens java.base/jdk.internal.ref=ALL-UNNAMED
---add-opens java.base/java.lang=ALL-UNNAMED
---add-opens java.base/java.nio=ALL-UNNAMED
---add-opens java.base/sun.nio.ch=ALL-UNNAMED
