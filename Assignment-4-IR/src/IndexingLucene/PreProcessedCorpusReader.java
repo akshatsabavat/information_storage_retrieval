@@ -22,7 +22,7 @@ public class PreProcessedCorpusReader {
 		// remember to close the file that you opened, when you do not use it any more
 		instream_collection = new FileInputStream(Path.ResultHM1+type);
 		is = new InputStreamReader(instream_collection);
-        br = new BufferedReader(is);   
+        br = new BufferedReader(is);
 	}
 	
 

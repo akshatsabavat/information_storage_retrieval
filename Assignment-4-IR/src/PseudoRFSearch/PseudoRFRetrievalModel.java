@@ -6,6 +6,10 @@ import Classes.Document;
 import Classes.Query;
 import IndexingLucene.MyIndexReader;
 import SearchLucene.*;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.util.BytesRef;
 //import Search.*;
 
 public class PseudoRFRetrievalModel {
@@ -34,14 +38,17 @@ public class PseudoRFRetrievalModel {
 		List<Document> feedBackDocuments = previousModel.retrieveQuery(aQuery, TopK); // fetching the documents from the old model to be used as feedback
 
 		// (2) implement GetTokenRFScore to get each query token's P(token|feedback model) in feedback documents
+		System.out.println("Initiating Creation of TokenRF Map..");
 		HashMap<String, Double> TokenRFScore = GetTokenRFScore(aQuery, feedBackDocuments);
 
 		// now getting the documents from the old model all together, using query not just topk
 		Integer collectionSize = ixreader.getDocumentCollectionSize();
+		System.out.println("Processing all documents from the previous model..");
 		List<Document> originalDocumentList = previousModel.retrieveQuery(aQuery, collectionSize);
 
 
 		// (3) & (4) Calculating the document scores with the RF scores of the query tokens and ranking them
+		System.out.println("Intiating construction of psuedo RF scored documents map..");
 		List<Document> pseudoRFScoredDocumentList = new ArrayList<Document>();
 		for(Document document : originalDocumentList) {
 			double QueryLikelihood = calculateRFScore(aQuery, document, TokenRFScore, alpha);
@@ -58,6 +65,8 @@ public class PseudoRFRetrievalModel {
         });
 
 		// Now getting topK documents
+
+		System.out.println(pseudoRFScoredDocumentList);
 
         return pseudoRFScoredDocumentList.subList(0, Math.min(TopN, pseudoRFScoredDocumentList.size()));
 	}
@@ -79,23 +88,36 @@ public class PseudoRFRetrievalModel {
 		HashMap<String, Integer> TokenFeedBackRelation = new HashMap<>();
 		long totalTermCount = 0; // for formula
 
-		// first we fetch of the contents from each feedback document
+		// first we fetch of the contents from each feedback document, but rather than content which may be too much we just require the terms that can be fetched from the vectors
 		// then we use each token of the query and build a probability score of each token with respect to the content in the feedback document
+		System.out.println("Processing feedback documents...");
 		for(Document doc : feedbackDocuments) {
-			String docContent = ixreader.getDocContent(doc.docid());
-			String[] tokens = docContent.split("\\s+"); // tokens created
-
-			for(String token : tokens) {
-				// relation here token ---> [token count value in the entire feedback list content]
-				TokenFeedBackRelation.put(token, TokenFeedBackRelation.getOrDefault(token, 0) + 1);
-				totalTermCount++; // keep incrementing
+			Terms terms = ixreader.getTermVector(doc.docid(), "CONTENT");
+			if(terms != null) {
+				TermsEnum termsEnum = terms.iterator();
+				BytesRef term;
+				while ((term = termsEnum.next()) != null) {
+					String token = term.utf8ToString();
+					long freq = (int) termsEnum.totalTermFreq();
+					TokenFeedBackRelation.put(token, (int) (TokenFeedBackRelation.getOrDefault(token, 0) + freq));
+					totalTermCount += freq;
+				}
 			}
+//			String docContent = ixreader.getDocContent(doc.docid());
+//			String[] tokens = docContent.split("\\s+"); // tokens created
+//
+//			for(String token : tokens) {
+//				// relation here token ---> [token count value in the entire feedback list content]
+//				TokenFeedBackRelation.put(token, TokenFeedBackRelation.getOrDefault(token, 0) + 1);
+//				totalTermCount++; // keep incrementing
+//			}
 		}
 
 		// getting probability score for each token
 		long collectionLength = ixreader.getCollectionLength();
 
 		// calculating the score or probability for each token in query
+		System.out.println("Calculating probability scores");
 		String[] queryTokens = Q.GetQueryContent().split("\\s+");
 		for(String queryToken: queryTokens) {
 			// now we can get the token freq of the query token cause we constructed the entire TokenFeedBack map or term dictionary before
@@ -108,6 +130,9 @@ public class PseudoRFRetrievalModel {
 			// add to tokenRFScore
 			TokenRFScore.put(queryToken, tokenProbability);
 		}
+
+		System.out.println("Token RF Map built");
+		System.out.println(TokenRFScore);
 
 		return TokenRFScore;
 	}
@@ -122,10 +147,23 @@ public class PseudoRFRetrievalModel {
 
 	private double calculateDocTermProb(Document doc, String token) throws Exception {
 		long collectionLength = ixreader.getCollectionLength();
-		Integer tokenDocumentFrequency =  ixreader.getTermDocumentFrequency(token); // number of token counts in the document content
-		long tokenCollectionFrequency = ixreader.getTermCollectionFrequency(token); // number of token counts in the collection content
-		int documentLength = ixreader.docLength(doc.docid()); // total number of terms in document
-        return (tokenDocumentFrequency + mu * ((double) tokenCollectionFrequency/collectionLength)) / (documentLength + mu);
+		long tokenCollectionFrequency = ixreader.getTermCollectionFrequency(token);
+		int documentLength = ixreader.docLength(doc.docid());
+
+		Terms terms = ixreader.getTermVector(doc.docid(), "CONTENT");
+		long tokenDocumentFrequency = 0;
+		if (terms != null) {
+			TermsEnum termsEnum = terms.iterator();
+			BytesRef term;
+			while ((term = termsEnum.next()) != null) {
+				if (term.utf8ToString().equals(token)) {
+					tokenDocumentFrequency = termsEnum.totalTermFreq();
+					break;
+				}
+			}
+		}
+
+		return (tokenDocumentFrequency + mu * ((double) tokenCollectionFrequency / collectionLength)) / (documentLength + mu);
 	}
 
 	/**

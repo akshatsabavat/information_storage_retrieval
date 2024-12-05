@@ -5,10 +5,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -181,6 +178,10 @@ public class MyIndexReader {
 	public String getDocContent(String docid) throws IOException {
 		Document D = ireader.document(Integer.parseInt(docid));
 		return D.get("CONTENT");
+	}
+
+	public Terms getTermVector(String docid, String field) throws IOException {
+		return ireader.getTermVector(Integer.parseInt(docid), field);
 	}
 
 	// Added new method of getting the term collection frequency
